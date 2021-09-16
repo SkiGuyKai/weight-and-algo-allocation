@@ -33,7 +33,7 @@ class SectorAnalysis:
 
     def __SECTOR_PERFORMANCE(self):
         '''track the sector performance'''
-        sp = SectorPerformances(key='R4NLQ9F769D3AH9W', output_format='pandas')
+        sp = SectorPerformances(key=[YOUR KEY HERE], output_format='pandas')
         data, meta_data = sp.get_sector()
         _RAW_SECTORS = data[['Rank B: Day Performance', 'Rank C: Day Performance', 'Rank D: Month Performance']]
 
