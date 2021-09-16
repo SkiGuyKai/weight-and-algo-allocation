@@ -72,7 +72,7 @@ class FinancialAsset:
 
     def __GET_TIMESERIES(self):
         '''retrieve timeseries data'''
-        ts = TimeSeries(key='R4NLQ9F769D3AH9W', output_format='pandas')
+        ts = TimeSeries(key=[YOUR KEY HERE], output_format='pandas')
 
         _RAW_DATA, meta_data = ts.get_daily(symbol=self.asset, outputsize='full')
         _RAW_DATA.sort_index(axis=0)
