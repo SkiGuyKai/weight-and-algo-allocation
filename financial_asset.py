@@ -2,12 +2,14 @@ from alpha_vantage.timeseries import TimeSeries
 import yfinance as yf
 import matplotlib.pyplot as plt 
 import pandas as pd
+import numpy as np 
 import json
 import csv
 import os
 
+
 '''
-important attributes to know:
+Important attributes to know:
     name = company name
     asset = ticker
     price = most recent close
@@ -18,18 +20,16 @@ important attributes to know:
 '''
 
 
-
 class FinancialAsset:
     '''
-    I want this to act as the parent class for crypto/FX/who knows what later,
-    for now it will model a financial asset (stock), 
-    it should have attributes like price as well as fundamental data
+    Retrieves relevant data such as timeseries, fundamentals, returns
     '''
 
     def __init__(self, asset):
         '''init atts'''
         self.asset = asset
         self.__LOAD_DATA()
+        self.__RETURNS()
         self.__SAVE_DATA()
     
 
@@ -46,7 +46,8 @@ class FinancialAsset:
             with open(data, 'r') as f:
                 # read the csv data and then sort to chronological order
                 self._RAW_DATA = pd.read_csv(f, index_col=0)
-                self._RAW_DATA.sort_index(axis=0)
+
+            self.__RETURNS()
 
             # set price to the most recent quote
             self.price = self._RAW_DATA['4. close'][0]
@@ -61,8 +62,8 @@ class FinancialAsset:
             print(f'No data found for {self.asset.upper()}, retrieving data...')
 
             self._RAW_DATA, self.meta_data = self.__GET_TIMESERIES()
-            self._RAW_DATA.sort_index(axis=0)
-            self.price = self._RAW_DATA['4. close'][-1]
+            self.__RETURNS()
+            self.price = self._RAW_DATA['4. close'][0]
 
             fndmt = self.__GET_FUNDAMENTALS()
             # if fundamnetals are available, set values
@@ -72,10 +73,9 @@ class FinancialAsset:
 
     def __GET_TIMESERIES(self):
         '''retrieve timeseries data'''
-        ts = TimeSeries(key=[YOUR KEY HERE], output_format='pandas')
+        ts = TimeSeries(key='YOUR KEY HERE', output_format='pandas')
 
         _RAW_DATA, meta_data = ts.get_daily(symbol=self.asset, outputsize='full')
-        _RAW_DATA.sort_index(axis=0)
 
         return _RAW_DATA, meta_data
 
@@ -118,6 +118,11 @@ class FinancialAsset:
             self.beta = None
 
 
+    def __RETURNS(self):
+        '''get returns'''
+        reversed_df = self._RAW_DATA.iloc[::-1]
+        self._RAW_DATA['6. returns'] = reversed_df['4. close'].pct_change()
+        
 
     def __SAVE_DATA(self):
         '''save the price + fundamental data into a csv + json'''
@@ -128,11 +133,24 @@ class FinancialAsset:
             json.dump(fd, f)
 
 
-    def plot(self):
+    def plot(self, col='4. close', returns=False):
         '''plot daily chart w/1 yr time frame'''
-        self._RAW_DATA['4. close'].sort_index(axis=0).tail(365).plot()
+        if returns:
+            fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+            ax1.set_ylabel('Price')
+            ax2.set_ylabel('Daily Return')
 
-        plt.title(f'{self.asset.upper()} Daily Time Series')
+            ax1.plot(self._RAW_DATA[col].sort_index(axis=0).tail(365))
+            ax2.plot(self._RAW_DATA['6. returns'].sort_index(axis=0).tail(365))
+
+            plt.xscale('linear')
+            fig.suptitle(f'{self.asset.upper()} Daily Time Series')
+
+        else:
+            self._RAW_DATA[col].sort_index(axis=0).tail(365).plot()
+            plt.title(f'{self.asset.upper()} Daily Time Series')
+
+        
         plt.xticks(rotation='30', wrap=True)
         plt.grid()
         plt.show()
