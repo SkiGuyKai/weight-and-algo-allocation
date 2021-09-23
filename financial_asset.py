@@ -2,9 +2,7 @@ from alpha_vantage.timeseries import TimeSeries
 import yfinance as yf
 import matplotlib.pyplot as plt 
 import pandas as pd
-import numpy as np 
 import json
-import csv
 import os
 
 
