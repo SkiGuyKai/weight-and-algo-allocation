@@ -32,18 +32,6 @@ class Portfolio:
 
         return portfolio
 
-    # this will be moved into weight module eventually
-    # weight module will syntehsize all weight params (sector+security RS, beta)
-    # final weights will be brought back into the portfolio
-    def __GET_WEIGHTS(self):
-        '''calculate the weights of each asset'''
-        self.weight = Weight(self.portfolio, self.sector_strength.asp)
-        self.assets.append('CASH')
-
-    # this will be moved into security analysis module eventually
-    def get_returns(self):
-        '''calc the returns of the portfolio'''
-
 
     def __SECTOR_CALC(self):
         '''send assets through sector analysis'''
@@ -55,26 +43,27 @@ class Portfolio:
         self.security_strength = SecurityAnalysis(self.portfolio, self.sector_strength.asp)
 
 
+    def __GET_WEIGHTS(self):
+        '''calculate the weights of each asset'''
+        self.weight = Weight(self.portfolio, self.sector_strength.asp)
+        #self.assets.append('CASH')
+
+
+    def __GET_RETURNS(self):
+        '''calc the returns of the portfolio'''
+        pass
+        
+
     def piefolio(self):
         '''show the pie chart portfolio breakdown'''
-        weights = []
-        for asset in self.portfolio.values():
-            if asset in self.assets:
-                weights.append(asset[0].weight)
-            else:
-                weights.append(self.portfolio['CASH'])
-
-        print(weights)
+        weights = [asset[0].weight for asset in self.portfolio.values()]
 
         plt.pie(weights, labels=self.assets, shadow=True, 
-            autopct='%1.2f%%')
+            autopct='%1.2f%%', normalize=False)
         plt.show()
 
 
-    def plot_chart(self):
+    def plot_chart(self, col='4. close', returns=False):
         '''plot the chart of the portfolio'''
         for data in self.portfolio.values():
-            if data[0].name not in self.assets:
-                pass
-            else:
-                data[0].plot()
+            data[0].plot(col, returns)
