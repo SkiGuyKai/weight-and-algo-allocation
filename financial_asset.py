@@ -1,13 +1,12 @@
-from alpha_vantage.timeseries import TimeSeries
-import yfinance as yf
-import matplotlib.pyplot as plt 
-import pandas as pd
-import json
 import os
-
+import json
+import pandas as pd
+import yfinance as yf 
+import matplotlib.pyplot as plt
+from alpha_vantage.timeseries import TimeSeries
 
 '''
-Important attributes to know:
+important attributes to know:
     name = company name
     asset = ticker
     price = most recent close
@@ -18,9 +17,11 @@ Important attributes to know:
 '''
 
 
+
 class FinancialAsset:
     '''
-    Retrieves relevant data such as timeseries, fundamentals, returns
+    Model a financial asset
+    Includes time series, returns, fundamentals, ability to chart
     '''
 
     def __init__(self, asset):
@@ -71,7 +72,7 @@ class FinancialAsset:
 
     def __GET_TIMESERIES(self):
         '''retrieve timeseries data'''
-        ts = TimeSeries(key='YOUR KEY HERE', output_format='pandas')
+        ts = TimeSeries(key='R4NLQ9F769D3AH9W', output_format='pandas')
 
         _RAW_DATA, meta_data = ts.get_daily(symbol=self.asset, outputsize='full')
 
@@ -131,15 +132,15 @@ class FinancialAsset:
             json.dump(fd, f)
 
 
-    def plot(self, col='4. close', returns=False):
+    def plot(self, col='4. close', sub=False):
         '''plot daily chart w/1 yr time frame'''
-        if returns:
+        if sub:
             fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-            ax1.set_ylabel('Price')
-            ax2.set_ylabel('Daily Return')
+            ax1.set_ylabel(col)
+            ax2.set_ylabel(sub)
 
             ax1.plot(self._RAW_DATA[col].sort_index(axis=0).tail(365))
-            ax2.plot(self._RAW_DATA['6. returns'].sort_index(axis=0).tail(365))
+            ax2.plot(self._RAW_DATA[sub].sort_index(axis=0).tail(365))
 
             plt.xscale('linear')
             fig.suptitle(f'{self.asset.upper()} Daily Time Series')
